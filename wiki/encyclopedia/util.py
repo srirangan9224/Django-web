@@ -1,4 +1,5 @@
 import re
+from random import choice
 import markdown2
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -39,3 +40,11 @@ def get_entry(title):
 def to_HTML(title):
     md_content = markdown2.markdown_path(f"entries/{title}.md")
     return md_content
+
+def search(sub):
+    matches = [title for title in list_entries() if sub.lower() in title.lower()]
+    return matches
+
+def random_page():
+    page = random.choice(list_entries())
+    return page
