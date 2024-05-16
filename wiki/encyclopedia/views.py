@@ -10,6 +10,10 @@ class NewPageForm(forms.Form):
     content = forms.CharField(label="content",widget=forms.Textarea)
 
 # Create your views here.
+def redirect(request):
+    return HttpResponseRedirect(reverse("index"))
+
+
 def index(request):
     if request.method == "POST":
         sub = request.POST['q']
