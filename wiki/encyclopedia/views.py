@@ -49,3 +49,6 @@ def new(request):
 def random_page(request):
     page = util.random_page()
     return HttpResponseRedirect(reverse("page",args=(page,)))
+
+def edit(request,name):
+    ...
