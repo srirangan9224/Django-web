@@ -46,5 +46,5 @@ def search(sub):
     return matches
 
 def random_page():
-    page = random.choice(list_entries())
+    page = choice(list_entries())
     return page

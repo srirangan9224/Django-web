@@ -1,8 +1,13 @@
 from django.shortcuts import render
 from . import util
+import os
 from django.urls import reverse
-from django.http import Http404,HttpResponseRedirect
+from django.http import Http404,HttpResponseRedirect,HttpResponse
+from django import forms
 
+class NewPageForm(forms.Form):
+    title = forms.CharField(label="title")
+    content = forms.CharField(label="content",widget=forms.Textarea)
 
 # Create your views here.
 def index(request):
@@ -21,3 +26,18 @@ def page(request,name):
         })
     else:
         raise Http404(f"this page does not exist.")
+
+def new(request):
+    if request.method == "POST":
+        title = request.POST["title"]
+        content = request.POST["content"]
+        if util.get_entry(title) == None:
+            file = open(rf"c:\Users\Hp\Desktop\web\entries\{title}.md",'w')
+            file.write(content)
+            file.close()
+            return HttpResponseRedirect(reverse("page",args=(title,)))
+        else:
+            raise Http404("page already exists")
+    return render(request,"encyclopedia/new.html",{
+        "form":NewPageForm()
+    })
