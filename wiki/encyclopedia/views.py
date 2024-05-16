@@ -51,4 +51,6 @@ def random_page(request):
     return HttpResponseRedirect(reverse("page",args=(page,)))
 
 def edit(request,name):
-    ...
+    return render(request,"encyclopedia/edit.html",{
+        "form":NewPageForm()
+    })
