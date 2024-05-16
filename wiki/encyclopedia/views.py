@@ -41,3 +41,7 @@ def new(request):
     return render(request,"encyclopedia/new.html",{
         "form":NewPageForm()
     })
+
+def random_page(request):
+    page = util.random_page()
+    return HttpResponseRedirect(reverse("page",args=(page,)))
