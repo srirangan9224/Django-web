@@ -51,6 +51,14 @@ def random_page(request):
     return HttpResponseRedirect(reverse("page",args=(page,)))
 
 def edit(request,name):
-    return render(request,"encyclopedia/edit.html",{
-        "form":NewPageForm()
-    })
+    if request.method == 'POST':
+        new_content = request.POST['pageContent']
+        file = open(rf"c:\Users\Hp\Desktop\web\entries\{name}.md",'w')
+        file.write(new_content)
+        file.close()
+        return HttpResponseRedirect(reverse(page,args=(name,)))
+    else:  
+        return render(request,"encyclopedia/edit.html",{
+            "title":name,
+            "content":util.get_entry(name)
+        })

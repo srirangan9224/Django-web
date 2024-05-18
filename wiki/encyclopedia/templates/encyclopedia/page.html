@@ -5,7 +5,7 @@
 
 {% block body %}
 {{ content|safe}}
-<form action="{% url 'edit' name %}" method="post">
+<form action="{% url 'edit' name %}" method="get">
     {% csrf_token %}
     <button type="submit"class="btn btn-danger">edit page</button>
 </form>
