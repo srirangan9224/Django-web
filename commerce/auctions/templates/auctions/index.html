@@ -2,6 +2,45 @@
 
 {% block body %}
     <h2>Active Listings</h2>
-
-    TODO
+    {% for listing in listings %}
+        <div class="card auction-item mb-4 shadow" style="background-color: beige;">
+            <div class="card-image-wrapper" align="center">
+                <img class="index-img" src="{{ listing.image }}" alt="...">
+                <hr>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title"> {{ listing.name }} </h5>
+                <div>
+                    <strong>Price:</strong> {{listing.price}} $
+                </div>
+                <div>
+                    <br>
+                    <p>
+                        {{listing.description}}
+                    </p>
+                    <br>
+                </div>
+                <div>
+                    <p style="color:darkgray;">created {{listing.listing_date}}</p>
+                </div>
+            </div>
+            <div class="find-more" style="padding-left: 20px;">
+                <form action="{% url 'index' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="listing_id" value="{{ listing.id }}">
+                    {% if user == listing.listed_by %}
+                    <input type="hidden" name="bidder" value="false">
+                    <button class="btn btn-primary" name="seller" type="submit" value="true">view bids</button>
+                    {% else %}
+                    <input type="hidden" name="seller" value="false">
+                    <button class="btn btn-primary" name="bidder" type="submit" value="true">place bids</button>
+                    {% endif %}
+                </form>
+                <br>
+            </div>
+        </div>
+    {% empty %}
+        <h1>No active listings </h1>
+    {% endfor %}
 {% endblock %}
+
