@@ -75,10 +75,20 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
-    
-def bidder(request,id):
-    ...
+   
+def bidder(request,listing_id):
+    item = Listing.objects.get(pk=int(listing_id))
+    comments = Comment.objects.filter(item=item)
+    return render(request,"auctions/bidder.html",{
+        "listing": item,
+        "comments":comments
 
+    })
 
-def seller(request,id):
-    ...
+def seller(request,listing_id):
+    item = Listing.objects.get(pk=int(listing_id))
+    comments = Comment.objects.filter(item=item)
+    return render(request,"auctions/seller.html",{
+        "listing": item,
+        "comments":comments
+    })

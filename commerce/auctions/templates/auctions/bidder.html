@@ -1,0 +1,40 @@
+{% extends 'auctions/layout.html' %}
+{% load static %}
+{% block title %}
+    {{ listing.name }}
+{% endblock %}
+
+{% block body %}
+<h2>Listing: {{ listing.name }}</h2>
+<br><br>
+<div class="card-image-wrapper" align="center">
+    <img class="index-img" src="{{ listing.image }}" alt="...">
+    <hr>
+</div>
+<p>
+    {{ listing.description }}
+</p>
+<h2>
+   price:  ${{ listing.price}}
+</h2>
+
+
+<h2>Details:</h2>
+
+<ul>
+    <li>listed by: {{ listing.listed_by }}</li>
+    <li>created: {{ listing.listing_date }}</li>
+</ul>
+<hr>
+<h2> comments: </h2>
+<br>
+{% for comment in comments %}
+<div class="Listing">
+    <strong>commented by: {{ comment.user }}</strong>
+    <p> {{ comment.comment }}</p>
+</div>
+<br><br>
+{% empty %}
+<h4> No Comments </h4>
+{% endfor %}
+{% endblock %}
