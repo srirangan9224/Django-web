@@ -1,0 +1,54 @@
+{% extends 'auctions/layout.html' %}
+
+{% block title %}
+your watchlist
+{% endblock %}
+
+{% block body %}
+{% for listing in listings %}
+<div class="card auction-item mb-4 shadow" style="background-color: beige;">
+    <div class="card-image-wrapper" align="center">
+        <img class="index-img" src="{{ listing.image }}" alt="...">
+        <hr>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title"> {{ listing.name }} </h5>
+        <div>
+            <strong>Price:</strong> {{listing.price}} $
+        </div>
+        <div>
+            <br>
+            <p>
+                {{listing.description}}
+            </p>
+            <br>
+        </div>
+        <div>
+            <p style="color:darkgray;">created {{listing.listing_date}}</p>
+        </div>
+    </div>
+    <div class="find-more" style="padding-left: 20px;">
+        <form action="{% url 'index' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="listing_id" value="{{ listing.id }}">
+            {% if user == listing.listed_by %}
+            <input type="hidden" name="bidder" value="false">
+            <button class="btn btn-primary" name="seller" type="submit" value="true">view bids</button>
+            {% else %}
+            <input type="hidden" name="seller" value="false">
+            <button class="btn btn-primary" name="bidder" type="submit" value="true">place bids</button>
+            {% endif %}
+        </form>
+        <br>
+    </div>
+</div>
+{% empty %}
+<div style="text-align: center;">
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="currentColor" class="bi bi-bag" viewBox="0 0 16 16">
+    <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+</svg>
+<br><br>
+<strong>your watchlist is empty </strong>
+</div>
+{% endfor %}
+{% endblock %}

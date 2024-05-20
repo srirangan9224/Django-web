@@ -77,12 +77,35 @@ def register(request):
         return render(request, "auctions/register.html")
    
 def bidder(request,listing_id):
+    if request.method == 'POST':
+        present = request.POST["present"]
+        item = Listing.objects.get(pk=listing_id)
+        user = request.user
+        if present == "true":
+            if len(Watchlist.objects.filter(user=user)) == 0:
+                new_watchlist = Watchlist.objects.create(user=user)
+                new_watchlist.save()
+                new_watchlist.item.add(item)
+                print(new_watchlist.item)
+            else:
+                watchlist = Watchlist.objects.filter(user=user).first()
+                watchlist.item.add(item)
+        elif present == "false":
+            watchlist = Watchlist.objects.filter(user=user).first()
+            watchlist.item.remove(item)
     item = Listing.objects.get(pk=int(listing_id))
     comments = Comment.objects.filter(item=item)
+    watchlist = Watchlist.objects.filter(user=request.user).first()
+    in_watchlist = False
+    try:
+        if item in watchlist.item.all():
+            in_watchlist = True
+    except:
+        raise Http404(watchlist.item)
     return render(request,"auctions/bidder.html",{
         "listing": item,
-        "comments":comments
-
+        "comments":comments,
+        "in_watchlist":in_watchlist
     })
 
 def seller(request,listing_id):
@@ -91,4 +114,26 @@ def seller(request,listing_id):
     return render(request,"auctions/seller.html",{
         "listing": item,
         "comments":comments
+    })
+
+def comment(request,listing_id):
+    if request.method == "POST":
+        link = request.POST["user"]
+        content = request.POST["comment"]
+        user = request.user
+        item = Listing.objects.get(pk=int(listing_id))
+        new_comment = Comment.objects.create(user=user,item=item,comment=content)
+        new_comment.save()
+        return HttpResponseRedirect(reverse(f"{link}",args=(listing_id,)))
+    
+def watchlist(request):
+    user = request.user
+    if len(Watchlist.objects.filter(user=user)) != 0:
+        watchlist = Watchlist.objects.filter(user=user).first()
+        listings = watchlist.item.all()
+    else:
+        listings = []
+    return render(request,"auctions/watchlist.html",{
+        "user":user,
+        "listings":listings
     })

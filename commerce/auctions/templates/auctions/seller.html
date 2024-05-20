@@ -36,4 +36,12 @@
 <h4> No Comments </h4>
 {% endfor %}
 
+<form action="{% url 'comment' listing.id %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" value="seller" name="user">
+    <textarea placeholder="comment here" name="comment" rows="4" cols="50"></textarea>
+    <br>
+    <button class="btn btn-success" type="submit">submit</button>
+</form>
+
 {% endblock %}
