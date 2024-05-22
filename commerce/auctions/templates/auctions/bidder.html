@@ -9,10 +9,24 @@
 {% for category in listing_cat %}
 <span class="badge">{{ category.category_name }}</span>
 {% endfor %}
+<br><br>
 {% if in_watchlist %}
 <div class="alert alert-primary" role="alert">
     This item is already in your watchlist
-  </div>
+</div>
+{% endif %}
+{% if listing.sold and no_bid %}
+<div class="alert alert-danger" role="alert">
+    Sorry! This item has been closed.
+</div>
+{% elif listing.sold and max_bidder %}
+<div class="alert alert-success" role="alert">
+    Congratulations! You have successfully purchased this item
+</div>
+{% elif listing.sold and not max_bidder %}
+<div class="alert alert-danger" role="alert">
+    Sorry! This item has already been sold to someone else.
+</div>
 {% endif %}
 <br><br>
 <div class="card-image-wrapper" align="center">
@@ -43,6 +57,26 @@
         <button type="submit" class="btn btn-primary">add to watchlist</button>
     {% endif %}
 </form>
+{% if not sold %}
+<hr>
+<h2>Bid:</h2>
+{% if max_bidder and not no_bid %}
+<div class="alert alert-success" role="alert">
+    your bid is the highest bid
+</div>
+{% elif not max_bidder and not no_bid %}
+<div class="alert alert-warning" role="alert">
+    There is a higher bid to this item by another customer
+</div>
+{% endif %}
+{{ bid_no }} bid(s) so far. your bid is the current bid
+<form method="post" action="{% url 'bid' %}">
+    {% csrf_token %}
+    <input type="number" min="{{ min_bid }}" name="bid">
+    <input type="hidden" name="listing_id" value="{{ listing.id }}">
+    <button type="submit" class="btn btn-success" name="submit">place a bid</button>
+</form>
+{% endif %}
 <hr>
 <h2> comments: </h2>
 <br>

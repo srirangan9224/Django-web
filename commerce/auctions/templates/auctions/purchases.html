@@ -1,0 +1,35 @@
+{% extends 'auctions/layout.html'%}
+
+{% block title %}
+your purchases
+{% endblock %}
+
+{% block body %}
+<h1> Your puschases</h1>
+{% for listing in listings %}
+        <div class="card auction-item mb-4 shadow" style="background-color: beige;">
+            <div class="card-image-wrapper" align="center">
+                <img class="index-img" src="{{ listing.image }}" alt="...">
+                <hr>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title"> {{ listing.name }} </h5>
+                <div>
+                    <strong>Price:</strong> {{listing.price}} $
+                </div>
+                <div>
+                    <br>
+                    <p>
+                        {{listing.description}}
+                    </p>
+                    <br>
+                </div>
+                <div>
+                    <p style="color:darkgray;">created {{listing.listing_date}}</p>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <h1>No purchases so far !</h1>
+    {% endfor %}
+{% endblock %}

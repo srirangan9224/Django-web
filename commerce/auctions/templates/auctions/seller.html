@@ -6,6 +6,15 @@
 
 {% block body %}
 <h2>Listing: {{ listing.name }}</h2>
+{% if listing.sold and not no_bid %}
+<div class="alert alert-success" role="alert">
+    This item has been sold
+</div>
+{% elif listing.sold and no_bid %}
+<div class="alert alert-danger" role="alert">
+    Sorry! This item has gone unsold.
+</div>
+{% endif %}
 {% for category in listing_cat %}
 <span class="badge">{{ category.category_name }}</span>
 {% endfor %}
@@ -26,6 +35,8 @@
     <li>listed by: {{ listing.listed_by }}</li>
     <li>created: {{ listing.listing_date }}</li>
 </ul>
+
+{% if not listing.sold %}
 <hr>
 <form action="{% url  'seller' listing.id %}" method="post">
     {% csrf_token %}
@@ -38,6 +49,24 @@
     </select>
     <button type="submit" class="btn btn-secondary">add new category</button>
 </form>
+
+
+
+<br><hr><br>
+<h2>Close Bidding</h2>
+{{ bid_count }} bids so far.
+<br>
+{% if not no_bid %}
+The highest bid is for $ {{ max_bid }} by {{ max_bidder.name }}
+{% endif %}
+<form method="post" action="{% url 'close' %}">
+    {% csrf_token %}
+    <input type="hidden" value="{{ listing.id }}" name="listing_id">
+    <button type="submit" class="btn btn-danger">close bidding</button>
+</form>
+{% endif %}
+
+
 <hr>
 <h2> comments: </h2>
 <br>

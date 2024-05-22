@@ -30,3 +30,12 @@ class Comment(models.Model):
 class Category(models.Model):
     category_name = models.CharField(max_length=100)
     items = models.ManyToManyField(Listing,related_name="items_in_category")
+
+class Bid(models.Model):
+    user = models.ForeignKey(User,related_name="bidder",on_delete=models.CASCADE)
+    bid = models.DecimalField(max_digits=10,decimal_places=2)
+    item = models.ForeignKey(Listing,on_delete=models.CASCADE,related_name="interested_item",default=None)
+
+class Sold(models.Model):
+    user = models.ForeignKey(User,related_name="buyer",on_delete=models.CASCADE)
+    item = models.ForeignKey(Listing,on_delete=models.CASCADE,related_name="purchased_item",default=None)

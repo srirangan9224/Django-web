@@ -102,6 +102,8 @@ def bidder(request,listing_id):
         present = request.POST["present"]
         item = Listing.objects.get(pk=listing_id)
         user = request.user
+
+
         if present == "true":
             if len(Watchlist.objects.filter(user=user)) == 0:
                 new_watchlist = Watchlist.objects.create(user=user)
@@ -115,26 +117,58 @@ def bidder(request,listing_id):
             watchlist = Watchlist.objects.filter(user=user).first()
             watchlist.item.remove(item)
         return HttpResponseRedirect(reverse("bidder",args=(listing_id,)))
+    
+
     item = Listing.objects.get(pk=int(listing_id))
     comments = Comment.objects.filter(item=item)
     watchlist = Watchlist.objects.filter(user=request.user).first()
     in_watchlist = False
+
+
     try:
         if item in watchlist.item.all():
             in_watchlist = True
     except:
         pass
+
+
     categories = Category.objects.all()
     listing_cat = []
+
+
     for category in categories:
         if item in category.items.all():
             listing_cat.append(category)
+    
+    bids = Bid.objects.filter(item=item)
+    bid_no = len(bids)
+    max_bid = item.price
+    max_bidder = request.user
+    for bid in bids:
+        if bid.bid > max_bid:
+            max_bid = bid.bid
+            max_bidder = bid.user
+    max_bidder_check = False
+    if max_bidder == request.user:
+        max_bidder_check = True
+    no_bid = False
+    if max_bid == item.price:
+        no_bid = True
+    
+
+
     return render(request,"auctions/bidder.html",{
         "listing": item,
         "comments":comments,
         "in_watchlist":in_watchlist,
         "watchlist_count":watchlist_count,
-        "listing_cat":listing_cat
+        "listing_cat":listing_cat,
+        "max_bid":max_bid,
+        "bid_no": bid_no,
+        "min_bid":max_bid+1,
+        "max_bidder":max_bidder_check,
+        "no_bid": no_bid,
+        "sold": item.sold
     })
 
 
@@ -159,12 +193,32 @@ def seller(request,listing_id):
         if item in category.items.all():
             listing_cat.append(category)
 
+    bids = Bid.objects.filter(item=item)
+    bid_no = len(bids)
+    max_bid = item.price
+    max_bidder = request.user
+
+    for bid in bids:
+        if bid.bid > max_bid:
+            max_bid = bid.bid
+    max_bidder_check = False
+    if max_bidder == request.user:
+        max_bidder_check = True
+    no_bid = False
+    if max_bid == item.price:
+        no_bid = True
+    bid_count = len(bids)
+
     return render(request,"auctions/seller.html",{
         "listing": item,
         "comments":comments,
         "watchlist_count":watchlist_count,
         "categories":categories,
-        "listing_cat":listing_cat
+        "listing_cat":listing_cat,
+        "max_bid":max_bid,
+        "max_bidder":max_bidder,
+        "no_bid":no_bid,
+        "bid_count":bid_count
     })
 
 @login_required
@@ -261,4 +315,67 @@ def create(request):
         "watchlist_count":watchlist_count,
         "categories": categories,
         "form":newListingForm()
+    })
+
+@login_required
+def bid(request):
+    if request.method == 'POST':
+        try:
+            item = Listing.objects.get(pk=int(request.POST["listing_id"]))
+            user = request.user
+            bid = float(request.POST["bid"])
+            new_bid = Bid.objects.create(
+                item=item,
+                user=user,
+                bid=bid
+            )
+            new_bid.save()
+            return HttpResponseRedirect(reverse(bidder,args=(int(request.POST["listing_id"]),)))
+        except:
+            raise Http404(request.POST)
+
+def close(request):
+    if request.method == "POST":
+        item = Listing.objects.get(pk=int(request.POST["listing_id"]))
+        item.sold = True
+        listing_id = item.id
+        item.save()
+
+
+        bids = Bid.objects.filter(item=item)
+        max_bid = item.price
+        max_bidder = request.user
+        for bid in bids:
+            if bid.bid > max_bid:
+                max_bid = bid.bid
+        unsold = False
+        if max_bid == item.price:
+            unsold = True
+
+        if unsold == False:
+            max_bid_object = Bid.objects.filter(item=item,bid=max_bid).first()
+            max_bidder = max_bid_object.user
+            sale = Sold.objects.create(
+                user=max_bidder,
+                item=item
+            )
+                
+        return HttpResponseRedirect(reverse("seller",args=(listing_id,)))
+    
+def purchases(request):
+    if len(Watchlist.objects.filter(user=request.user)) != 0:
+        watchlist = Watchlist.objects.filter(user=request.user).first()
+        watchlist_count = len(watchlist.item.all())
+    else:
+        watchlist_count = 0
+
+
+    purchases = Sold.objects.filter(user=request.user)
+    purchased_products = []
+    for purchase in purchases:
+        purchased_products.append(purchase.item)
+
+    return render(request,"auctions/purchases.html",{
+        "watchlist_count":watchlist_count,
+        "listings":purchased_products
     })
