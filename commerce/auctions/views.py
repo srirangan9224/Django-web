@@ -11,7 +11,7 @@ from django import forms
 class newListingForm(forms.Form):
     name = forms.CharField(max_length=100)
     price = forms.DecimalField(max_digits=10,decimal_places=2)
-    description = forms.CharField(max_length=10000,widget=forms.TextInput)
+    description = forms.CharField(max_length=10000,widget=forms.Textarea)
     listing_date = forms.DateTimeField()
     image = forms.URLField()
 
@@ -206,7 +206,29 @@ def category(request):
         "categories":categories
     })
 
+@login_required
 def create(request):
+    if request.method == 'POST':
+       name = request.POST["name"]
+       description = request.POST["description"]
+       price = request.POST["price"]
+       listing_date = request.POST["listing_date"]
+       image = request.POST["image"]
+       category_id = request.POST["categories"]
+       sold = False
+       listed_by = request.user
+       cat = Category.objects.get(pk=category_id)
+       new_listing = Listing.objects.create(
+           name=name,
+           price=price,
+           description=description,
+           listing_date=listing_date,
+           listed_by=listed_by,
+           sold=sold,
+           image=image
+       )
+       new_listing.save()
+       cat.items.add(new_listing)
     if len(Watchlist.objects.filter(user=request.user)) != 0:
         watchlist = Watchlist.objects.filter(user=request.user).first()
         watchlist_count = len(watchlist.item.all())

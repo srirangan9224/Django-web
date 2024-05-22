@@ -5,13 +5,23 @@ create a new listing
 
 {% block body %}
 
-<form action="{% url 'create' %}">
-    {{ form }}
-    <ul>
-        {% for category in categories %}
-        <li>{{ category.category_name }}</li>
-        {% endfor %}
-    </ul>
+<form action="{% url 'create' %}" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="mb-3">
+            {{ field.label }}
+            <br>
+            {{ field }}
+        </div>
+    {% endfor %}
+    <label for="categories">Categories:</label>
+    <select name="categories" id="categories">
+            <option value="0">select primary category</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.category_name }}</option>
+            {% endfor %}
+    </select>
+    <br><br>
     <button type="submit" class="btn btn-success">create new listing</button>
 </form>
 
