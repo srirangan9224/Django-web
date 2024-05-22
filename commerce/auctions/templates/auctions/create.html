@@ -1,0 +1,18 @@
+{% extends 'auctions/layout.html' %}
+{% block title %}
+create a new listing
+{% endblock %}
+
+{% block body %}
+
+<form action="{% url 'create' %}">
+    {{ form }}
+    <ul>
+        {% for category in categories %}
+        <li>{{ category.category_name }}</li>
+        {% endfor %}
+    </ul>
+    <button type="submit" class="btn btn-success">create new listing</button>
+</form>
+
+{% endblock %}

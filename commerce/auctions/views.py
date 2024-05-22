@@ -6,6 +6,14 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
 from .models import *
+from django import forms
+
+class newListingForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    price = forms.DecimalField(max_digits=10,decimal_places=2)
+    description = forms.CharField(max_length=10000,widget=forms.TextInput)
+    listing_date = forms.DateTimeField()
+    image = forms.URLField()
 
 
 def index(request):
@@ -196,4 +204,19 @@ def category(request):
     return render(request,"auctions/categories.html",{
         "watchlist_count":watchlist_count,
         "categories":categories
+    })
+
+def create(request):
+    if len(Watchlist.objects.filter(user=request.user)) != 0:
+        watchlist = Watchlist.objects.filter(user=request.user).first()
+        watchlist_count = len(watchlist.item.all())
+    else:
+        watchlist_count = 0
+    user = request.user
+    sold = False
+    categories = Category.objects.all()
+    return render(request,"auctions/create.html",{
+        "watchlist_count":watchlist_count,
+        "categories": categories,
+        "form":newListingForm()
     })
