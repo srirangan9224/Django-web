@@ -6,6 +6,11 @@
 
 {% block body %}
 <h2>Listing: {{ listing.name }}</h2>
+{% if in_watchlist %}
+<div class="alert alert-primary" role="alert">
+    This item is already in your watchlist
+  </div>
+{% endif %}
 <br><br>
 <div class="card-image-wrapper" align="center">
     <img class="index-img" src="{{ listing.image }}" alt="...">

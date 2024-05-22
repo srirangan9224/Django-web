@@ -18,10 +18,18 @@ def index(request):
         
         elif request.POST['bidder'] == "false" and request.POST['seller'] == "true":
             return HttpResponseRedirect(reverse("seller",args=(listing_id,)))
-        
+    try:
+        if len(Watchlist.objects.filter(user=request.user)) != 0:
+            watchlist = Watchlist.objects.filter(user=request.user).first()
+            watchlist_count = len(watchlist.item.all())
+        else:
+            watchlist_count = 0
+    except:
+        watchlist_count = 0
     active_listings = Listing.objects.filter(sold=False)
     return render(request, "auctions/index.html",{
-        "listings":active_listings,"user":request.user
+        "listings":active_listings,"user":request.user,
+        "watchlist_count":watchlist_count
     })
 
 
@@ -75,8 +83,13 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
-   
+@login_required   
 def bidder(request,listing_id):
+    if len(Watchlist.objects.filter(user=request.user)) != 0:
+        watchlist = Watchlist.objects.filter(user=request.user).first()
+        watchlist_count = len(watchlist.item.all())
+    else:
+        watchlist_count = 0
     if request.method == 'POST':
         present = request.POST["present"]
         item = Listing.objects.get(pk=listing_id)
@@ -93,6 +106,7 @@ def bidder(request,listing_id):
         elif present == "false":
             watchlist = Watchlist.objects.filter(user=user).first()
             watchlist.item.remove(item)
+        return HttpResponseRedirect(reverse("bidder",args=(listing_id,)))
     item = Listing.objects.get(pk=int(listing_id))
     comments = Comment.objects.filter(item=item)
     watchlist = Watchlist.objects.filter(user=request.user).first()
@@ -105,17 +119,27 @@ def bidder(request,listing_id):
     return render(request,"auctions/bidder.html",{
         "listing": item,
         "comments":comments,
-        "in_watchlist":in_watchlist
+        "in_watchlist":in_watchlist,
+        "watchlist_count":watchlist_count
     })
 
+
+@login_required
 def seller(request,listing_id):
+    if len(Watchlist.objects.filter(user=request.user)) != 0:
+        watchlist = Watchlist.objects.filter(user=request.user).first()
+        watchlist_count = len(watchlist.item.all())
+    else:
+        watchlist_count = 0
     item = Listing.objects.get(pk=int(listing_id))
     comments = Comment.objects.filter(item=item)
     return render(request,"auctions/seller.html",{
         "listing": item,
-        "comments":comments
+        "comments":comments,
+        "watchlist_count":watchlist_count
     })
 
+@login_required
 def comment(request,listing_id):
     if request.method == "POST":
         link = request.POST["user"]
@@ -124,9 +148,16 @@ def comment(request,listing_id):
         item = Listing.objects.get(pk=int(listing_id))
         new_comment = Comment.objects.create(user=user,item=item,comment=content)
         new_comment.save()
-        return HttpResponseRedirect(reverse(f"{link}",args=(listing_id,)))
+        return HttpResponseRedirect(reverse(f"{link}",args=(listing_id)))
     
+
+@login_required   
 def watchlist(request):
+    if len(Watchlist.objects.filter(user=request.user)) != 0:
+        watchlist = Watchlist.objects.filter(user=request.user).first()
+        watchlist_count = len(watchlist.item.all())
+    else:
+        watchlist_count = 0
     user = request.user
     if len(Watchlist.objects.filter(user=user)) != 0:
         watchlist = Watchlist.objects.filter(user=user).first()
@@ -135,5 +166,6 @@ def watchlist(request):
         listings = []
     return render(request,"auctions/watchlist.html",{
         "user":user,
-        "listings":listings
+        "listings":listings,
+        "watchlist_count":watchlist_count
     })
