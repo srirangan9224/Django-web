@@ -6,6 +6,9 @@
 
 {% block body %}
 <h2>Listing: {{ listing.name }}</h2>
+{% for category in listing_cat %}
+<span class="badge">{{ category.category_name }}</span>
+{% endfor %}
 {% if in_watchlist %}
 <div class="alert alert-primary" role="alert">
     This item is already in your watchlist

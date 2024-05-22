@@ -124,11 +124,17 @@ def bidder(request,listing_id):
             in_watchlist = True
     except:
         pass
+    categories = Category.objects.all()
+    listing_cat = []
+    for category in categories:
+        if item in category.items.all():
+            listing_cat.append(category)
     return render(request,"auctions/bidder.html",{
         "listing": item,
         "comments":comments,
         "in_watchlist":in_watchlist,
-        "watchlist_count":watchlist_count
+        "watchlist_count":watchlist_count,
+        "listing_cat":listing_cat
     })
 
 
@@ -139,12 +145,26 @@ def seller(request,listing_id):
         watchlist_count = len(watchlist.item.all())
     else:
         watchlist_count = 0
+    if request.method == "POST":
+        category_id = request.POST["categories"]
+        item = Listing.objects.get(pk=listing_id)
+        category = Category.objects.get(pk=category_id)
+        if item not in category.items.all():
+            category.items.add(item)
     item = Listing.objects.get(pk=int(listing_id))
     comments = Comment.objects.filter(item=item)
+    categories = Category.objects.all()
+    listing_cat = []
+    for category in categories:
+        if item in category.items.all():
+            listing_cat.append(category)
+
     return render(request,"auctions/seller.html",{
         "listing": item,
         "comments":comments,
-        "watchlist_count":watchlist_count
+        "watchlist_count":watchlist_count,
+        "categories":categories,
+        "listing_cat":listing_cat
     })
 
 @login_required
