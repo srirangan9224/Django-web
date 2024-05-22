@@ -115,7 +115,7 @@ def bidder(request,listing_id):
         if item in watchlist.item.all():
             in_watchlist = True
     except:
-        raise Http404(watchlist.item)
+        pass
     return render(request,"auctions/bidder.html",{
         "listing": item,
         "comments":comments,
@@ -148,7 +148,7 @@ def comment(request,listing_id):
         item = Listing.objects.get(pk=int(listing_id))
         new_comment = Comment.objects.create(user=user,item=item,comment=content)
         new_comment.save()
-        return HttpResponseRedirect(reverse(f"{link}",args=(listing_id)))
+        return HttpResponseRedirect(reverse(f"{link}",args=(listing_id,)))
     
 
 @login_required   
@@ -168,4 +168,32 @@ def watchlist(request):
         "user":user,
         "listings":listings,
         "watchlist_count":watchlist_count
+    })
+
+@login_required
+def category(request):
+    if len(Watchlist.objects.filter(user=request.user)) != 0:
+        watchlist = Watchlist.objects.filter(user=request.user).first()
+        watchlist_count = len(watchlist.item.all())
+    else:
+        watchlist_count = 0
+    categories = Category.objects.all()
+    if request.method == 'POST':
+        category = request.POST["categories"]
+        if int(category) == 0:
+            return render(request,"auctions/categories.html",{
+                "watchlist_count":watchlist_count,
+                "categories":categories
+            })
+        cat = Category.objects.get(pk=category)
+        items = cat.items.all()
+        return render(request,"auctions/categories.html",{
+            "watchlist_count":watchlist_count,
+            "categories":categories,
+            "cat":cat,
+            "items":items     
+        })
+    return render(request,"auctions/categories.html",{
+        "watchlist_count":watchlist_count,
+        "categories":categories
     })
