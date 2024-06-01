@@ -133,7 +133,7 @@ def login_view(request):
         # Attempt to sign user in
         email = request.POST["email"]
         password = request.POST["password"]
-        user = authenticate(request, username=email, password=password)
+        user = authenticate(request,username=email,password=password)
 
         # Check if authentication successful
         if user is not None:
