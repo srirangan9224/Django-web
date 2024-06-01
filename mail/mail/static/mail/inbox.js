@@ -4,22 +4,35 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
-  document.querySelector('#compose').addEventListener('click', compose_email);
+  document.querySelector('#compose').addEventListener('click', () => compose_email(undefined,undefined));
   document.querySelector("#form-submit").addEventListener('click', create_mail);
   document.addEventListener('click',event =>{
     if (event.target.className === "solid"){
       const mail_id = event.target.dataset.mail_id;
       get_mail_page(mail_id);}
     else if (event.target.id === "reply"){
-      console.log("reply");}
+      const recipients = event.target.dataset.recipients;
+      const subject = event.target.dataset.subject;
+      compose_email(recipients,subject)
+      }
     else if (event.target.id === "archive"){
-      console.log("archive")
-      fetch(`/emails/${event.target.dataset.mail_id}`, {
+      if (event.target.innerHTML === "archive"){
+        fetch(`/emails/${event.target.dataset.mail_id}`, {
         method: 'PUT',
         body: JSON.stringify({
             archived: true
         })
-      })
+      })}
+      
+      else if(event.target.innerHTML === "unarchive"){
+        fetch(`/emails/${event.target.dataset.mail_id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+              archived: false
+          })
+        })  
+      }
+    location.reload()
     }
     })
   // By default, load the inbox
@@ -34,7 +47,8 @@ function mail_page(email){
   const reply_button = document.createElement("button");
   reply_button.id = 'reply';
   reply_button.className = 'btn btn-primary';
-  reply_button.dataset.mail_id = email['id'];
+  reply_button.dataset.recipients = email["sender"];
+  reply_button.dataset.subject = email["subject"];
   reply_button.innerHTML = 'reply';
   const archive_button = document.createElement("button");
   archive_button.id = 'archive';
@@ -44,7 +58,7 @@ function mail_page(email){
   const mail_page = document.querySelector("#mail-view");
   const para = document.createElement('p')
   para.innerHTML = email["body"]
-  console.log(email)
+  
 
   mail_page.innerHTML = `
   <strong> from: </strong> ${email["sender"]}
@@ -61,7 +75,9 @@ function mail_page(email){
   mail_page.append("    ")
   mail_page.append(archive_button)}
   else{
-    console.log("in archive")
+    mail_page.append("    ")
+    archive_button.innerHTML = 'unarchive';
+    mail_page.append(archive_button)
   }
   mail_page.append(rule)  
   mail_page.append(para)
@@ -127,7 +143,8 @@ function create_mail(){
 
 
 
-function compose_email() {
+function compose_email(recipients,subject) {
+
 
   // Show compose view and hide other views
   document.querySelector("#mail-view").style.display = 'none';
@@ -137,9 +154,28 @@ function compose_email() {
 
 
   // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
+
+    if (recipients === undefined){
+      document.querySelector('#compose-recipients').value = '';
+      document.querySelector('#compose-subject').value = '';
+      document.querySelector('#compose-body').value = '';
+    }
+    else{
+      document.querySelector('#compose-recipients').value = recipients;
+      document.querySelector('#compose-recipients').disabled = true;
+      const substring = "re:"
+      if (subject.includes(substring)){
+      document.querySelector('#compose-subject').value = subject;
+      }
+      else{
+        document.querySelector("#compose-subject").value = substring+subject;
+      }
+      document.querySelector("#compose-subject").disabled = true;
+      document.querySelector('#compose-body').value = '';
+      
+    }
+  
+    
 }
 
 
