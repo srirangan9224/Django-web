@@ -1,0 +1,38 @@
+{% extends 'network/layout.html' %}
+{% load static %}
+
+{% block body %}
+<h1>profile</h1>
+<div class="profile"> 
+    {% if profile.dp %}
+    <div class="img">
+        <img src="{{ profile.dp }}" ehight="200px" width="200px">
+    </div>
+    {%else %}
+    <div class="img">
+        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+          </svg>
+    </div>
+    {% endif %}
+    <br>
+    <div align="center">
+        <strong>{{ profile.person.username }}</strong>
+    </div>
+    {% if not profile.dp %}
+    <form method="post" align="center" action="{% url 'dp' %}">
+        {% csrf_token %}
+        <input type="hidden" name="proid" value="{{ profile.id }}">
+        <input type="url" name="dp" placeholder="enter image url" autofocus>
+        <button type="submit" class="btn btn-success"> add profile picture</button>
+    </form>
+    {% endif %}
+ </div>
+ <hr>
+<div class="follow">
+    <h1> following : {{ profile.following.count}}</h1>
+    <h1> followers : {{ profile.follows.count}}</h1>
+</div>
+
+{% endblock %}

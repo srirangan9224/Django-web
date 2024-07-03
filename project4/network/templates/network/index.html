@@ -1,5 +1,14 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
-    TODO
+<br><br><h1>All posts</h1>
+    {% for post in posts %}
+    {{ post }}
+    {% empty %}
+    <h2> no posts </h2>
+    {% endfor %}
+{% endblock %}
+{% block script %}
+    <script src="{% static 'network/index.js' %}"></script>
 {% endblock %}

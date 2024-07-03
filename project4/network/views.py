@@ -4,13 +4,29 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from .models import *
 
 
 def index(request):
-    return render(request, "network/index.html")
+    user = request.user  
+    posts = Post.objects.all().order_by("-time")
+    return render(request, "network/index.html",{
+        "posts":posts
+    })
 
+def profile_page(request):
+    profile = Profile.objects.get(person=request.user)
+    return render(request,"network/profile.html",{
+        "profile":profile
+    })
 
+def dp(request):
+    if request.method == "POST":
+        dp = request.POST["dp"]
+        profile = Profile.objects.get(pk=request.POST["proid"])
+        profile.dp = dp
+        profile.save()
+        return HttpResponseRedirect(reverse("profile"))
 def login_view(request):
     if request.method == "POST":
 
@@ -53,6 +69,8 @@ def register(request):
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
+            profile = Profile.objects.create(person=user)
+            profile.save()
         except IntegrityError:
             return render(request, "network/register.html", {
                 "message": "Username already taken."
