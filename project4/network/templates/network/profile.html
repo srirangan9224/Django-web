@@ -1,8 +1,34 @@
 {% extends 'network/layout.html' %}
 {% load static %}
 
+{% block script %}
+<script src="{% static 'network/profile.js' %}"></script>
+{% endblock %}
+
 {% block body %}
-<h1>profile</h1>
+<div class="title-bar">
+<ul class="nav">
+    <li class="nav-item" >
+    <button type="submit" class="btn btn-warning" data-funct="profileButton">
+      <a class="nav-link active" aria-current="page">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+        </svg>
+      </a>
+    </button>
+    </li>
+    <li class="nav-item">
+    <button type="submit" class="btn btn-warning" data-funct="postsButton">
+      <a class="nav-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-chat-left-dots" viewBox="0 0 16 16">
+            <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+            <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+        </svg>
+      </a>
+    </button>
+    </li>
+  </ul>
+</div>
 <div class="profile"> 
     {% if profile.dp %}
     <div class="img">
@@ -20,6 +46,7 @@
     <div align="center">
         <strong>{{ profile.person.username }}</strong>
     </div>
+    {% if user == profile.person %}
     {% if not profile.dp %}
     <form method="post" align="center" action="{% url 'dp' %}">
         {% csrf_token %}
@@ -27,12 +54,68 @@
         <input type="url" name="dp" placeholder="enter image url" autofocus>
         <button type="submit" class="btn btn-success"> add profile picture</button>
     </form>
+    {% else %}
+    <form method="post" align="center" action="{% url 'dp' %}">
+        {% csrf_token %}
+        <input type="hidden" name="proid" value="{{ profile.id }}">
+        <input type="url" name="dp" placeholder="enter image url" autofocus>
+        <button type="submit" class="btn btn-success"> change profile picture</button>
+    </form>
+    {% endif %}
     {% endif %}
  </div>
  <hr>
 <div class="follow">
     <h1> following : {{ profile.following.count}}</h1>
     <h1> followers : {{ profile.follows.count}}</h1>
+    <h1> posts : {{ posts.count }}</h1>
 </div>
+<div class="posts">
+    {% if posts.first.profile.person == user %}
+    <div class="newPost">
+      <h1> new post</h1>
+      <form action="{% url 'new' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="proid" value="{{ profile.id }}">
+        <textarea placeholder="create a new post" name="content"></textarea>
+        <button type="submit" class="btn btn-success">create post</button>
+      </form>
+    </div>
+    {% endif %}
 
+    <hr>
+    <h1>Your posts</h1>
+    {% for post in posts %}
+    {% if post.profile.person == user %}
+    <div class="solid">
+      <strong class="otherProfileLink">{{ post.profile.person }}</strong>
+      <br><hr>
+    {% else %}
+        <div class="solid">
+          <strong class="otherProfileLink">
+            <a href="{% url 'profile' post.profile.id %}">{{ post.profile.person }}</a>
+          </strong>
+          <br><hr>
+    {% endif %}
+          <p>{{ post.content }}</p>
+          <p class="timestamp"><strong>{{ post.time }}</strong></p>
+          ❤️ {{ post.likes.count }}
+          <br>
+          <a> comment</a>
+          {% if user == post.profile.person %}
+          <br><br>
+          <button class="btn btn-primary" id="edit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+              <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+            </svg> edit 
+          </button>
+          {% endif %}
+          <br><br>
+        </div>
+        <br>
+    {% empty %}
+    <h2> No posts so far</h2>
+    {% endfor %}
+<div>
 {% endblock %}
+

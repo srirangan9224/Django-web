@@ -3,21 +3,35 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from datetime import datetime
 
 from .models import *
 
 
 def index(request):
-    user = request.user  
+    if request.user.is_authenticated and not Profile.objects.filter(person=request.user):
+        new_profile = Profile(person=request.user,dp="")
+        new_profile.save()
+        print(True)
     posts = Post.objects.all().order_by("-time")
+    if not request.user.is_authenticated:
+        profile = None
+    else:
+        profile = Profile.objects.filter(person=request.user).first()
     return render(request, "network/index.html",{
-        "posts":posts
-    })
+        "posts":posts,
+        "user_profile": profile
+            })
 
-def profile_page(request):
-    profile = Profile.objects.get(person=request.user)
+def profile_page(request,proid):
+    user_profile = Profile.objects.filter(person=request.user).first()
+    profile = Profile.objects.filter(pk=proid).first()
+    posts = Post.objects.filter(profile=profile).order_by("-time")
     return render(request,"network/profile.html",{
-        "profile":profile
+        "profile":profile,
+        "posts": posts,
+        "user_profile":user_profile,
     })
 
 def dp(request):
@@ -26,7 +40,24 @@ def dp(request):
         profile = Profile.objects.get(pk=request.POST["proid"])
         profile.dp = dp
         profile.save()
-        return HttpResponseRedirect(reverse("profile"))
+        return HttpResponseRedirect(reverse("profile",args=(int(request.POST["proid"]),)))
+    
+def new(request):
+    if request.method == "POST":
+        proid = int(request.POST["proid"])
+        profile = Profile.objects.get(pk=request.POST["proid"])
+        content = request.POST["content"]
+        time = datetime.now()
+        new_post = Post(
+            profile=profile,
+            content=content,
+            time=time
+        )
+        new_post.save()
+        print(proid)
+        return HttpResponseRedirect(reverse("profile",args=(proid,)))
+    
+    
 def login_view(request):
     if request.method == "POST":
 
@@ -45,6 +76,7 @@ def login_view(request):
             })
     else:
         return render(request, "network/login.html")
+    
 
 
 def logout_view(request):
@@ -69,8 +101,6 @@ def register(request):
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
-            profile = Profile.objects.create(person=user)
-            profile.save()
         except IntegrityError:
             return render(request, "network/register.html", {
                 "message": "Username already taken."

@@ -5,3 +5,20 @@
 .img{
     text-align: center;
 }
+a:active{
+    color:black;
+}
+a:visited{
+    color:black;
+}
+.newPost{
+    border-style: solid;
+}
+.solid{
+    border-style: solid;
+    border-color: black;
+    border-width: 3px;
+}
+.timestamp{
+    color:darkgray;
+}
