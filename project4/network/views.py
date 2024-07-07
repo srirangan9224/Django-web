@@ -1,10 +1,12 @@
+import json
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
 
@@ -19,19 +21,23 @@ def index(request):
         profile = None
     else:
         profile = Profile.objects.filter(person=request.user).first()
+    comments = Comment.objects.all()
     return render(request, "network/index.html",{
         "posts":posts,
-        "user_profile": profile
+        "user_profile": profile,
+        "comments":comments
             })
-
+@login_required
 def profile_page(request,proid):
     user_profile = Profile.objects.filter(person=request.user).first()
     profile = Profile.objects.filter(pk=proid).first()
     posts = Post.objects.filter(profile=profile).order_by("-time")
+    comments = Comment.objects.all()
     return render(request,"network/profile.html",{
         "profile":profile,
         "posts": posts,
         "user_profile":user_profile,
+        "comments":comments
     })
 
 def dp(request):
@@ -109,3 +115,41 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+
+def comment(request):
+    if request.method == "POST":
+        post = Post.objects.get(pk=int(request.POST["post"]))
+        person = request.user 
+        content = request.POST["content"]
+        new_comment = Comment(person=person,content=content,post=post)
+        new_comment.save()
+        return HttpResponseRedirect(reverse("index"))
+    
+@csrf_exempt
+def like(request):
+    if request.method == "POST":
+        post = Post.objects.get(pk = int(json.loads(request.body)["post_id"]))
+        if post.profile.person != request.user: 
+            if request.user in post.likes.all():
+                post.likes.remove(request.user)
+                print(post.likes.all())
+            else:
+                post.likes.add(request.user)
+                return JsonResponse({"message": f"{request.user} liked post {post.content} by {post.profile.person}"}, status=201)
+    else:
+        return JsonResponse({"message":"post request required"},status=400)
+    
+def follow(request):
+    if request.method == "POST":
+        proid = int(request.POST["proid"])
+        profile = Profile.objects.get(pk=proid)
+        profile_2 = Profile.objects.filter(person=request.user).first()
+        follow = request.POST["follow"]
+        if follow == "follow":
+            profile.follows.add(request.user)
+            profile_2.following.add(profile.person)
+        else:
+            profile.follows.remove(request.user)
+            profile_2.following.remove(profile.person)
+        return HttpResponseRedirect(reverse("profile",args=(proid,)))

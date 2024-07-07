@@ -3,6 +3,8 @@
 
 {% block script %}
 <script src="{% static 'network/profile.js' %}"></script>
+<script src="{% static 'network/comment.js'%}"></script>
+<script src="{% static 'network/like.js' %}"></script>
 {% endblock %}
 
 {% block body %}
@@ -29,6 +31,12 @@
     </li>
   </ul>
 </div>
+<br>
+{% if request.user in profile.follows.all %}
+<div class="alert alert-success" role="alert">
+   you are following this profile
+</div>
+{% endif %}
 <div class="profile"> 
     {% if profile.dp %}
     <div class="img">
@@ -69,6 +77,24 @@
     <h1> following : {{ profile.following.count}}</h1>
     <h1> followers : {{ profile.follows.count}}</h1>
     <h1> posts : {{ posts.count }}</h1>
+
+    {% if not request.user == profile.person %}
+          {% if not request.user in profile.follows.all %}
+          <form method="post" action="{% url 'follow' %}">
+              {% csrf_token %}
+              <input type="hidden" value="{{ profile.id }}" name="proid">
+              <input type="hidden" value="follow" name="follow">
+              <button class="btn btn-success" type="submit"> follow </button>
+          </form>
+          {% else %}
+          <form method="post" action="{% url 'follow' %}">
+            {% csrf_token %}  
+            <input type="hidden" value="{{ profile.id }}" name="proid">
+            <input type="hidden" value="unfollow" name="follow">
+            <button class="btn btn-danger" type="submit"> unfollow </button>
+          </form>
+          {% endif %}
+      {% endif %}
 </div>
 <div class="posts">
     {% if posts.first.profile.person == user %}
@@ -84,7 +110,7 @@
     {% endif %}
 
     <hr>
-    <h1>Your posts</h1>
+    <h1>posts</h1>
     {% for post in posts %}
     {% if post.profile.person == user %}
     <div class="solid">
@@ -99,9 +125,32 @@
     {% endif %}
           <p>{{ post.content }}</p>
           <p class="timestamp"><strong>{{ post.time }}</strong></p>
-          ❤️ {{ post.likes.count }}
+          <div class="likes" data-post="{{ post.id }}">❤️ {{ post.likes.count }}</div>
           <br>
-          <a> comment</a>
+
+          <a class="comment_button" href="#" data-mode="view" data-post="{{ post.id }}"> view comments </a>
+        <div class="comments" data-post="{{ post.id }}">
+          <div class="new_comment">
+            <form action="{% url 'comment' %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" value="{{ post.id }}" name="post">
+              <textarea placeholder="write your comment here" name="content"></textarea>
+              <button class="btn btn-secondary">comment</button>
+            </form>
+          </div>
+          {% for comment in comments %}
+          {% if comment.post == post %}
+          <div class="comment">
+            <strong>{{ comment.person }}</strong>
+            <p>{{ comment.content }}</p>
+          </div>
+          {% endif %}
+          {% empty %}
+          no comments
+          {% endfor %}
+        </div>
+         
+      
           {% if user == post.profile.person %}
           <br><br>
           <button class="btn btn-primary" id="edit">
@@ -117,5 +166,6 @@
     <h2> No posts so far</h2>
     {% endfor %}
 <div>
+
 {% endblock %}
 

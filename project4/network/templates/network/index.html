@@ -4,7 +4,7 @@
 {% block body %}
 <br><br><h1>All posts</h1>
     {% for post in posts %}
-    <div class="solid">
+    <div class="solid"> 
         <strong class="otherProfileLink">
           {% if user == post.profile.person %}
             {{ post.profile.person }}
@@ -16,9 +16,29 @@
       
         <p>{{ post.content }}</p>
         <p class="timestamp"><strong>{{ post.time }}</strong></p>
-        ❤️ {{ post.likes.count }}
-        <br>
-        <a> comment</a>
+        <div class="likes" data-post="{{ post.id }}">❤️ {{ post.likes.count }}</div>
+        <br class="reference">
+        <a class="comment_button" href="#" data-mode="view" data-post="{{ post.id }}"> view comments </a>
+        <div class="comments" data-post="{{ post.id }}">
+          <div class="new_comment">
+            <form action="{% url 'comment' %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" value="{{ post.id }}" name="post">
+              <textarea placeholder="write your comment here" name="content"></textarea>
+              <button class="btn btn-secondary">comment</button>
+            </form>
+          </div>
+          {% for comment in comments %}
+          {% if comment.post == post %}
+          <div class="comment">
+            <strong>{{ comment.person }}</strong>
+            <p>{{ comment.content }}</p>
+          </div>
+          {% endif %}
+          {% empty %}
+          no comments
+          {% endfor %}
+        </div>
         {% if user == post.profile.person %}
         <br><br>
         <button class="btn btn-primary" id="edit">
@@ -35,5 +55,6 @@
     {% endfor %}
 {% endblock %}
 {% block script %}
-    <script src="{% static 'network/index.js' %}"></script>
+    <script src="{% static 'network/comment.js' %}"></script>
+    <script src="{% static 'network/like.js' %}"></script>
 {% endblock %}
