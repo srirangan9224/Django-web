@@ -153,3 +153,25 @@ def follow(request):
             profile.follows.remove(request.user)
             profile_2.following.remove(profile.person)
         return HttpResponseRedirect(reverse("profile",args=(proid,)))
+
+
+def following(request):
+    comments = Comment.objects.all()
+    profile = Profile.objects.filter(person=request.user).first()
+    profiles = []
+    posts = {}
+    for person in profile.following.all():
+        pr = Profile.objects.filter(person=person).first()
+        profiles.append(pr)
+        posts[person] = Post.objects.filter(profile=pr) 
+        
+    allPosts = []
+    for person in posts:
+        allPosts.extend(list(posts[person]))
+    return render(request,"network/following.html",{
+        "user_profile": profile,
+        "profiles": profiles,
+        "comments": comments,
+        "posts": posts,
+        "allPosts": allPosts,
+    })

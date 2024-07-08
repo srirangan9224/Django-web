@@ -1,0 +1,117 @@
+{% extends 'network/layout.html' %}
+{% load static %}
+
+{% block script %}
+<script src="{% static 'network/following.js' %}"></script>
+<script src="{% static 'network/comment.js'%}"></script>
+<script src="{% static 'network/like.js' %}"></script>
+{% endblock %}
+
+
+
+{% block body %}
+<div class="title-bar">
+    <ul class="nav">
+        <li class="nav-item" >
+        <button type="submit" class="btn btn-warning" data-funct="profileButton">
+          <a class="nav-link active" aria-current="page">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+            </svg>
+          </a>
+        </button>
+        </li>
+        <li class="nav-item">
+        <button type="submit" class="btn btn-warning" data-funct="postsButton">
+          <a class="nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-chat-left-dots" viewBox="0 0 16 16">
+                <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+            </svg>
+          </a>
+        </button>
+        </li>
+      </ul>
+</div>
+
+
+{% for profile in profiles %}
+<div class="profile"> 
+    {% if profile.dp %}
+    <div class="img">
+        <img src="{{ profile.dp }}" ehight="200px" width="200px">
+    </div>
+    {%else %}
+    <div class="img">
+        <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+          </svg>
+    </div>
+    {% endif %}
+    <br>
+    <div align="center">
+        <strong>{{ profile.person.username }}</strong>
+    </div>
+    <div>
+        <strong>
+            following: {{ profile.following.count }}<br>
+            followers: {{ profile.follows.count }}<br>
+            posts: 
+            {% for person,post in posts.items %} 
+                {% if person == profile.person %}
+                    {{ post.count }}
+                {% endif %}
+            {% endfor %}
+        </strong>
+    </div>
+ </div>
+{% empty %}
+<h1> You are not following anyone </h1>
+{% endfor %}
+
+
+<h1>posts</h1>
+    {% for post in allPosts %}
+    <div class="solid" id="posts">
+          <strong class="otherProfileLink">
+            <a href="{% url 'profile' post.profile.id %}">{{ post.profile.person }}</a>
+          </strong>
+          <br><hr>
+          <p>{{ post.content }}</p>
+          <p class="timestamp"><strong>{{ post.time }}</strong></p>
+
+
+          <div class="likes" data-post="{{ post.id }}">❤️ {{ post.likes.count }}</div>
+          <br>
+          
+          
+          
+          <a class="comment_button" href="#" data-mode="view" data-post="{{ post.id }}"> view comments </a>
+            <div class="comments" data-post="{{ post.id }}">
+                <div class="new_comment">
+                  <form action="{% url 'comment' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ post.id }}" name="post">
+                    <textarea placeholder="write your comment here" name="content"></textarea>
+                    <button class="btn btn-secondary">comment</button>
+                  </form>
+                </div>
+                {% for comment in comments %}
+                  {% if comment.post == post %}
+                  <div class="comment">
+                    <strong>{{ comment.person }}</strong>
+                    <p>{{ comment.content }}</p>
+                  </div>
+                  {% endif %}
+                {% empty %}
+                  no comments
+                {% endfor %}
+            </div>
+    </div>
+            <br><br>  
+    {% empty %}
+        <h2> No posts so far</h2>
+    {% endfor %}
+
+{% endblock %}

@@ -13,6 +13,7 @@ urlpatterns = [
     path("new",views.new,name="new"),
     path("comment",views.comment,name="comment"),
     path("follow",views.follow,name="follow"),
+    path("following",views.following,name="following"),
     
     #API route
     path("like",views.like,name="like")

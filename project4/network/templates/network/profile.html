@@ -97,7 +97,7 @@
       {% endif %}
 </div>
 <div class="posts">
-    {% if posts.first.profile.person == user %}
+    {% if profile.person == user %}
     <div class="newPost">
       <h1> new post</h1>
       <form action="{% url 'new' %}" method="post">
@@ -107,6 +107,7 @@
         <button type="submit" class="btn btn-success">create post</button>
       </form>
     </div>
+
     {% endif %}
 
     <hr>
@@ -168,4 +169,3 @@
 <div>
 
 {% endblock %}
-
