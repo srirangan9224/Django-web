@@ -71,9 +71,10 @@
 {% endfor %}
 
 
-<h1>posts</h1>
-    {% for post in allPosts %}
-    <div class="solid" id="posts">
+<h1 class="heading">posts</h1>
+{% for page in pages %}
+    {% for post in page %}
+    <div class="solid"  data-page="{{ page.number }}" id="posts">
           <strong class="otherProfileLink">
             <a href="{% url 'profile' post.profile.id %}">{{ post.profile.person }}</a>
           </strong>
@@ -109,9 +110,17 @@
                 {% endfor %}
             </div>
     </div>
-            <br><br>  
     {% empty %}
         <h2> No posts so far</h2>
     {% endfor %}
+  {% endfor %}
 
+  <br>
+    <nav aria-label="Page navigation example" class="tb">
+      <ul class="pagination justify-content-center">
+        {% for page in pages %}
+        <li class="page-item"><a class="page-link" data-page="{{ page.number }}">{{ page.number }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
 {% endblock %}

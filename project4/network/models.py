@@ -16,6 +16,7 @@ class Post(models.Model):
     content = models.TextField()
     time = models.DateTimeField()
     likes = models.ManyToManyField(User,related_name="likes")
+    edited = models.BooleanField(default=False)
     
     
 class Comment(models.Model):

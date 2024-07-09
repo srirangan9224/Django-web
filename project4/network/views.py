@@ -1,14 +1,15 @@
-import json
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 
 from .models import *
+from datetime import datetime
+import json
 
 
 def index(request):
@@ -17,25 +18,27 @@ def index(request):
         new_profile.save()
         print(True)
     posts = Post.objects.all().order_by("-time")
+    pages = Paginator(posts,10)
     if not request.user.is_authenticated:
         profile = None
     else:
         profile = Profile.objects.filter(person=request.user).first()
     comments = Comment.objects.all()
     return render(request, "network/index.html",{
-        "posts":posts,
         "user_profile": profile,
-        "comments":comments
+        "comments":comments,
+        "pages":pages
             })
 @login_required
 def profile_page(request,proid):
     user_profile = Profile.objects.filter(person=request.user).first()
     profile = Profile.objects.filter(pk=proid).first()
     posts = Post.objects.filter(profile=profile).order_by("-time")
+    pages = Paginator(posts,10)
     comments = Comment.objects.all()
     return render(request,"network/profile.html",{
         "profile":profile,
-        "posts": posts,
+        "pages":pages,
         "user_profile":user_profile,
         "comments":comments
     })
@@ -137,8 +140,7 @@ def like(request):
             else:
                 post.likes.add(request.user)
                 return JsonResponse({"message": f"{request.user} liked post {post.content} by {post.profile.person}"}, status=201)
-    else:
-        return JsonResponse({"message":"post request required"},status=400)
+    return JsonResponse({"message":"post request required"},status=400)
     
 def follow(request):
     if request.method == "POST":
@@ -168,10 +170,25 @@ def following(request):
     allPosts = []
     for person in posts:
         allPosts.extend(list(posts[person]))
+    pages = Paginator(allPosts,10)
     return render(request,"network/following.html",{
         "user_profile": profile,
         "profiles": profiles,
         "comments": comments,
         "posts": posts,
-        "allPosts": allPosts,
+        "pages":pages
     })
+    
+
+@csrf_exempt
+def edit(request):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        content = body["content"]
+        post = Post.objects.get(pk=int(body["post_id"]))
+        if post.edited == False:
+            post.edited = True
+        post.content = content
+        post.save()
+        return JsonResponse({"message":f"success, post { body["post_id"] } was edited "})
+    return JsonResponse({"message":"error must be a POST request"},status=400)
